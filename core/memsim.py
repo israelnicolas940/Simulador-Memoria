@@ -150,7 +150,18 @@ class MemSim(cmd2.Cmd):
         físico (#/.) e identificadores
         de blocos."""
         res: ShowRes = self.service.show()
-        self.poutput(self.intro)
+
+        string_aux = "-" * len(res.physical_representation)
+
+        output = (
+            f"Mapa de Memória ({self.service.memory.memsize} bytes)\n"
+            f"{string_aux}\n"
+            f"{res.physical_representation}\n"
+            f"{res.ids}\n"
+            f"{string_aux}\n\n\n"
+        )
+
+        self.poutput(output)
 
     @cmd2.with_category(CUSTOM_CATEGORY)
     def do_stats(self, _: cmd2.Statement) -> None:
@@ -158,7 +169,19 @@ class MemSim(cmd2.Cmd):
         uso, fragmentação interna e
         externa."""
         res: StatsRes = self.service.stats()
-        self.poutput(self.intro)
+        
+        usage_percent = (res.allocated * 100) / res.total_size
+
+        output = (
+            "==Estatísticas==\n"
+            f"Tamanho total: {res.total_size} bytes\n"
+            f"Ocupado: {res.allocated} bytes | Livres: {res.free} bytes\n"
+            f"Buracos (fragmentação externa): {res.fragmentation_external}\n"
+            f"Fragmentação interna: {res.fragmentation_internal} bytes\n"
+            f"Uso efetivo {usage_percent:.2f}%"
+        )
+
+        self.poutput(output)
 
     def _print_result(self, res: GenericRes):
         if res.success:
