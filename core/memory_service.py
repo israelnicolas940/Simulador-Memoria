@@ -86,7 +86,19 @@ class FirstFitAlgorithm(AllocAlgorithm):
 
 class BestFitAlgorithm(AllocAlgorithm):
     def choose_block(self, table: MemoryTable, block_size: int) -> Optional[Block]:
-        return None
+        best_block = None
+        best_rmng = None
+
+        """Percorre todos os blocos, seleciona o bloco livre que terá menor fragmentação interna"""
+        for block in table.blocks:
+            if block.is_free and block.size >= block_size:
+                remaining = block.size - block_size
+
+                if best_block is None or remaining < best_rmng:
+                    best_block = block
+                    best_rmng = remaining
+
+        return best_block
 
 
 class WorstFitAlgorithm(AllocAlgorithm):
@@ -241,8 +253,31 @@ class MemoryService:
 
     def show(self) -> ShowRes:
         """Display current memory state"""
-        return ShowRes("####....###...", "1111....222...")
+        physical = "["
+        ids = "["
+        for block in self.memory.blocks:
+            if(block.is_free):
+                physical += "." * block.size
+                ids += "." * block.size
+            else:
+                physical += "#" * block.size
+                ids += str(block.block_id) * block.size
+        physical += "]"
+        ids += "]"
+
+        return ShowRes(physical, ids)
 
     def stats(self) -> StatsRes:
         """Calcula e mostra estatísticas sobre a memória"""
-        return StatsRes(0, 0, 0, 0, 0)
+        print("Blocos ativos:")
+        total_external_frag, total_internal_frag, total_free = 0, 0, 0
+        for block in self.memory.blocks:
+            """Se o bloco estiver livre ele conta como fragmentação externa e como espaço livre"""
+            if block.is_free:
+                total_external_frag += 1
+                total_free += block.size
+            else:
+                """Caso contrário, percorremos todo ele identificando bytes iguais a 0..."""
+                print(f"[id={block.block_id}] @{block.start} +{block.size}B (usado={block.size}) |")
+        total_allc = self.memory.memsize - total_free
+        return StatsRes(self.memory.memsize, total_allc, total_free, total_internal_frag, total_external_frag)
