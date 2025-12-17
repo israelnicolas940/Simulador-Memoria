@@ -81,28 +81,44 @@ class AllocAlgorithm:
 
 class FirstFitAlgorithm(AllocAlgorithm):
     def choose_block(self, table: MemoryTable, block_size: int) -> Optional[Block]:
+        for block in table.blocks:
+            if block.is_free and block.size >= block_size:
+                return block
+
         return None
 
 
 class BestFitAlgorithm(AllocAlgorithm):
     def choose_block(self, table: MemoryTable, block_size: int) -> Optional[Block]:
         best_block = None
-        best_rmng = None
+        best_size = float("inf")
 
-        """Percorre todos os blocos, seleciona o bloco livre que terá menor fragmentação interna"""
         for block in table.blocks:
             if block.is_free and block.size >= block_size:
-                remaining = block.size - block_size
-
-                if best_block is None or remaining < best_rmng:
+                if block.size < best_size:
+                    best_size = block.size
                     best_block = block
-                    best_rmng = remaining
+        
+        if best_block:
+            return best_block
 
-        return best_block
+        return None
 
 
 class WorstFitAlgorithm(AllocAlgorithm):
     def choose_block(self, table: MemoryTable, block_size: int) -> Optional[Block]:
+        worst_block = None
+        worst_size = -1 
+
+        for block in table.blocks:
+            if block.is_free and block.size >= block_size:
+                if block.size > worst_size:
+                    worst_size = block.size
+                    worst_block = block
+        
+        if worst_block:
+            return worst_block
+
         return None
 
 
