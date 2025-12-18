@@ -187,7 +187,7 @@ Isso facilita manutenção e futuras extensões.
 
 ---
 
-## 9. Padrões de Projeto Identificados
+## 9. Padrões de Projeto
 
 ### Strategy (implícito)
 
